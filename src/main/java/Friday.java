@@ -66,8 +66,14 @@ class Event extends Task {
         return "[E]" + super.toString() + " (from: " + from + " to: " + to + ")";
     }
 }
+
+class DukeException extends Exception {
+    public DukeException(String message) {
+        super(message);
+    }
+}
 public class Friday {
-    public static void main(String[] args) {
+    public static void main(String[] args){
         Scanner scanner = new Scanner(System.in);
         Task[] tasks = new Task[100];
         int taskCount = 0;
@@ -97,71 +103,92 @@ public class Friday {
                     System.out.println("\n");
                 }
             } else {
-                String[] commandParts = command.split(" ", 2);
-                String taskType = commandParts[0].toLowerCase();
-                String taskDescription = commandParts.length > 1 ? commandParts[1] : "";
+                try {
+                    String[] commandParts = command.split(" ", 2);
+                    String taskType = commandParts[0].toLowerCase();
+                    String taskDescription = commandParts.length > 1 ? commandParts[1] : "";
 
-                switch (taskType) {
-                    case "mark":
-                        int markIndex = Integer.parseInt(taskDescription) - 1;
-                        if (markIndex >= 0 && markIndex < taskCount) {
-                            tasks[markIndex].markAsDone();
-                            System.out.println("Nice! I've marked this task as done:");
-                            System.out.println("  " + tasks[markIndex]);
+                    switch (taskType) {
+                        case "mark":
+                            int markIndex = Integer.parseInt(taskDescription) - 1;
+                            if (markIndex >= 0 && markIndex < taskCount) {
+                                tasks[markIndex].markAsDone();
+                                System.out.println("Nice! I've marked this task as done:");
+                                System.out.println("  " + tasks[markIndex]);
+                                System.out.println("\n");
+                            } else {
+                                throw new DukeException("Invalid task index.");
+                            }
+                            break;
+                        case "unmark":
+                            int unmarkIndex = Integer.parseInt(taskDescription) - 1;
+                            if (unmarkIndex >= 0 && unmarkIndex < taskCount) {
+                                tasks[unmarkIndex].markAsNotDone();
+                                System.out.println("OK, I've marked this task as not done yet:");
+                                System.out.println("  " + tasks[unmarkIndex]);
+                                System.out.println("\n");
+                            } else {
+                                throw new DukeException("Invalid task index.");
+                            }
+                            break;
+                        case "todo":
+                            if (taskDescription.isEmpty()) {
+                                throw new DukeException("Please enter ToDo task.");
+                            }
+                            tasks[taskCount] = new Todo(taskDescription);
+                            taskCount++;
+                            System.out.println("Got it. I've added this task:");
+                            System.out.println("  " + tasks[taskCount - 1]);
+                            System.out.println("Now you have " + taskCount + " tasks in the list.");
                             System.out.println("\n");
-                        } else {
-                            System.out.println("Invalid task index.");
+                            break;
+                        case "deadline":
+                            if (taskDescription.isEmpty()) {
+                                throw new DukeException("Invalid deadline format." +
+                                        "Please use: deadline <task> /by <date>");
+                            }
+                            String[] deadlineParts = taskDescription.split("/by", 2);
+                            String deadlineDescription = deadlineParts[0].trim();
+                            String by = deadlineParts[1].trim();
+                            tasks[taskCount] = new Deadline(deadlineDescription, by);
+                            taskCount++;
+                            System.out.println("Got it. I've added this task:");
+                            System.out.println("  " + tasks[taskCount - 1]);
+                            System.out.println("Now you have " + taskCount + " tasks in the list.");
                             System.out.println("\n");
-                        }
-                        continue;
-                    case "unmark":
-                        int unmarkIndex = Integer.parseInt(taskDescription) - 1;
-                        if (unmarkIndex >= 0 && unmarkIndex < taskCount) {
-                            tasks[unmarkIndex].markAsNotDone();
-                            System.out.println("OK, I've marked this task as not done yet:");
-                            System.out.println("  " + tasks[unmarkIndex]);
+                            break;
+                        case "event":
+                            String[] eventParts = taskDescription.split("/from", 2);
+                            if (eventParts.length < 2) {
+                                throw new DukeException("Invalid event format. Please use: " +
+                                        "event <task> /from <start time> /to <end time>");
+                            }
+                            String eventDescription = eventParts[0].trim();
+                            String[] eventTimeParts = eventParts[1].trim().split("/to", 2);
+                            if (eventTimeParts.length < 2) {
+                                throw new DukeException("Invalid event format. Please use: " +
+                                        "event <task> /from <start time> /to <end time>");
+                            }
+                            String from = eventTimeParts[0].trim();
+                            String to = eventTimeParts[1].trim();
+                            tasks[taskCount] = new Event(eventDescription, from, to);
+                            taskCount++;
+                            System.out.println("Got it. I've added this task:");
+                            System.out.println("  " + tasks[taskCount - 1]);
+                            System.out.println("Now you have " + taskCount + " tasks in the list.");
                             System.out.println("\n");
-                        } else {
-                            System.out.println("Invalid task index.");
-                            System.out.println("\n");
-                        }
-                        continue;
-                    case "todo":
-                        tasks[taskCount] = new Todo(taskDescription);
-                        taskCount++;
-                        System.out.println("Got it. I've added this task:");
-                        System.out.println("  " + tasks[taskCount - 1]);
-                        System.out.println("Now you have " + taskCount + " tasks in the list.");
-                        System.out.println("\n");
-                        continue;
-                    case "deadline":
-                        String[] deadlineParts = taskDescription.split("/by", 2);
-                        String deadlineDescription = deadlineParts[0].trim();
-                        String by = deadlineParts[1].trim();
-                        tasks[taskCount] = new Deadline(deadlineDescription, by);
-                        taskCount++;
-                        System.out.println("Got it. I've added this task:");
-                        System.out.println("  " + tasks[taskCount - 1]);
-                        System.out.println("Now you have " + taskCount + " tasks in the list.");
-                        System.out.println("\n");
-                        continue;
-                    case "event":
-                        String[] eventParts = taskDescription.split("/from", 2);
-                        String eventDescription = eventParts[0].trim();
-                        String[] eventTimeParts = eventParts[1].trim().split("/to", 2);
-                        String from = eventTimeParts[0].trim();
-                        String to = eventTimeParts[1].trim();
-                        tasks[taskCount] = new Event(eventDescription, from, to);
-                        taskCount++;
-                        System.out.println("Got it. I've added this task:");
-                        System.out.println("  " + tasks[taskCount - 1]);
-                        System.out.println("Now you have " + taskCount + " tasks in the list.");
-                        System.out.println("\n");
-                        continue;
-                    default:
-                        System.out.println("Invalid command.");
-                        System.out.println("\n");
-                        continue;
+                            break;
+                        default:
+                            throw new DukeException("I'm sorry, please give an invalid input:-(");
+                    }
+                } catch (DukeException e) {
+                    System.out.println("OOPS!!! " + e.getMessage());
+                } catch (NumberFormatException e) {
+                    System.out.println("OOPS!!! The task index must be a number.");
+                    System.out.println("\n");
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("OOPS!!! The task index is out of range.");
+                    System.out.println("\n");
                 }
             }
             System.out.println("____________________________________________________________");
