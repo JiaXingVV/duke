@@ -38,7 +38,6 @@ class Todo extends Task {
         return "[T]" + super.toString();
     }
 }
-
 class Deadline extends Task {
     protected String by;
 
@@ -52,7 +51,6 @@ class Deadline extends Task {
         return "[D]" + super.toString() + " (by: " + by + ")";
     }
 }
-
 class Event extends Task {
     protected String from;
     protected String to;
@@ -68,12 +66,13 @@ class Event extends Task {
         return "[E]" + super.toString() + " (from: " + from + " to: " + to + ")";
     }
 }
-
 class DukeException extends Exception {
     public DukeException(String message) {
         super(message);
     }
 }
+
+
 public class Friday {
     public static void main(String[] args){
         Scanner scanner = new Scanner(System.in);
