@@ -1,6 +1,7 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.*;
 
 class Task {
     protected String description;
@@ -74,9 +75,13 @@ class DukeException extends Exception {
 
 
 public class Friday {
+
+    private static final String FILE_PATH = "./data/duke.txt";
+    private static List<Task> tasks = new ArrayList<>();
     public static void main(String[] args){
         Scanner scanner = new Scanner(System.in);
-        List<Task> tasks = new ArrayList<>();
+
+        loadTasks();
 
         System.out.println("____________________________________________________________");
         System.out.println("Hello! I'm Friday");
@@ -91,7 +96,8 @@ public class Friday {
             if (command.equalsIgnoreCase("bye")) {
                 System.out.println("Bye. Hope to see you again soon!");
                 break;
-            } else if (command.equalsIgnoreCase("list")) {
+            } 
+            else if (command.equalsIgnoreCase("list")) {
                 if (tasks.isEmpty()) {
                     System.out.println("No tasks added yet.");
                     System.out.println("\n");
@@ -102,7 +108,8 @@ public class Friday {
                     }
                     System.out.println("\n");
                 }
-            } else {
+            } 
+            else {
                 try {
                     String[] commandParts = command.split(" ", 2);
                     String taskType = commandParts[0].toLowerCase();
@@ -199,7 +206,71 @@ public class Friday {
                     System.out.println("\n");
                 }
             }
+            saveTasks();
             System.out.println("____________________________________________________________");
         }
+    }
+    private static void loadTasks() {
+        File file = new File(FILE_PATH);
+        try {
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+                return;
+            }
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNext()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split(" \\| ");
+                Task task = null;
+                switch (parts[0]) {
+                    case "T":
+                        task = new Todo(parts[2]);
+                        break;
+                    case "D":
+                        task = new Deadline(parts[2], parts[3]);
+                        break;
+                    case "E":
+                        task = new Event(parts[2], parts[3], parts[4]);
+                        break;
+                }
+                if (task != null) {
+                    if (parts[1].equals("1")) {
+                        task.markAsDone();
+                    }
+                    tasks.add(task);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found. Starting with an empty task list.");
+        }
+    }
+
+    private static void saveTasks() {
+        try {
+            PrintWriter writer = new PrintWriter(FILE_PATH);
+            for (Task task : tasks) {
+                writer.println(taskToFileString(task));
+            }
+            writer.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Error saving tasks. Data file not found.");
+        }
+    }
+
+    private static String taskToFileString(Task task) {
+        String type = "";
+        String timeInfo = "";
+
+        if (task instanceof Todo) {
+            type = "T";
+        } else if (task instanceof Deadline) {
+            type = "D";
+            timeInfo = " | " + ((Deadline) task).by;
+        } else if (task instanceof Event) {
+            type = "E";
+            timeInfo = " | " + ((Event) task).from + " | " + ((Event) task).to;
+        }
+
+        return type + " | " + (task.isDone ? "1" : "0") + " | " + task.description + timeInfo;
     }
 }
