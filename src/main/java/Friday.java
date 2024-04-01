@@ -2,6 +2,9 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 class Task {
     protected String description;
@@ -40,16 +43,25 @@ class Todo extends Task {
     }
 }
 class Deadline extends Task {
-    protected String by;
+    protected LocalDateTime by;
 
     public Deadline(String description, String by) {
         super(description);
-        this.by = by;
+        this.by = parseDateTime(by);
+    }
+
+    private LocalDateTime parseDateTime(String by) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/yyyy HHmm");
+            return LocalDateTime.parse(by, formatter);
+        } catch (DateTimeParseException e) {
+            throw new RuntimeException("Invalid date format. Please use: d/M/yyyy HHmm, e.g., 2/12/2019 1800");
+        }
     }
 
     @Override
     public String toString() {
-        return "[D]" + super.toString() + " (by: " + by + ")";
+        return "[D]" + super.toString() + " (by: " + by.format(DateTimeFormatter.ofPattern("MMM d yyyy, h:mm a")) + ")";
     }
 }
 class Event extends Task {
@@ -230,6 +242,7 @@ public class Friday {
                         task = new Deadline(parts[2], parts[3]);
                         break;
                     case "E":
+                        // Assuming Event class also uses LocalDateTime
                         task = new Event(parts[2], parts[3], parts[4]);
                         break;
                 }
@@ -244,6 +257,7 @@ public class Friday {
             System.out.println("File not found. Starting with an empty task list.");
         }
     }
+    
 
     private static void saveTasks() {
         try {
@@ -260,17 +274,19 @@ public class Friday {
     private static String taskToFileString(Task task) {
         String type = "";
         String timeInfo = "";
-
+    
         if (task instanceof Todo) {
             type = "T";
         } else if (task instanceof Deadline) {
             type = "D";
-            timeInfo = " | " + ((Deadline) task).by;
+            timeInfo = " | " + ((Deadline) task).by.format(DateTimeFormatter.ofPattern("d/M/yyyy HHmm"));
         } else if (task instanceof Event) {
+            // Assuming Event class also uses LocalDateTime
             type = "E";
-            timeInfo = " | " + ((Event) task).from + " | " + ((Event) task).to;
+            timeInfo = " | " + ((Event) task).from.formatted(DateTimeFormatter.ofPattern("d/M/yyyy HHmm")) 
+            + " | " + ((Event) task).to.formatted(DateTimeFormatter.ofPattern("d/M/yyyy HHmm"));
         }
-
+    
         return type + " | " + (task.isDone ? "1" : "0") + " | " + task.description + timeInfo;
     }
 }
