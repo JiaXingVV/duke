@@ -122,7 +122,25 @@ public class Friday {
                     }
                     System.out.println("\n");
                 }
-            } 
+            }
+            else if (command.startsWith("find ")) {
+                String keyword = command.substring(5).trim();
+                List<Task> foundTasks = new ArrayList<>();
+                for (Task task : tasks) {
+                    if (task.description.contains(keyword)) {
+                        foundTasks.add(task);
+                    }
+                }
+                if (foundTasks.isEmpty()) {
+                    System.out.println("No matching tasks found.");
+                } else {
+                    System.out.println("Here are the matching tasks in your list:");
+                    for (int i = 0; i < foundTasks.size(); i++) {
+                        System.out.println((i + 1) + ". " + foundTasks.get(i));
+                    }
+                }
+                System.out.println("\n");
+            }
             else {
                 try {
                     String[] commandParts = command.split(" ", 2);
