@@ -141,6 +141,9 @@ public class Friday {
                 }
                 System.out.println("\n");
             }
+            else if (command.equalsIgnoreCase("stats")) {
+                showStatistics();
+            }
             else {
                 try {
                     String[] commandParts = command.split(" ", 2);
@@ -335,6 +338,20 @@ public class Friday {
             }
         }
         return false;
+    }
+    private static void showStatistics() {
+        // show the number of tasks that have been completed in the past week
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+        int completedTasksCount = 0;
+        for (Task task : tasks) {
+            if (task.isDone && task instanceof Deadline) {
+                Deadline deadlineTask = (Deadline) task;
+                if (deadlineTask.by.isAfter(oneWeekAgo)) {
+                    completedTasksCount++;
+                }
+            }
+        }
+        System.out.println("Number of tasks completed in the past week: " + completedTasksCount);
     }
 }
 
