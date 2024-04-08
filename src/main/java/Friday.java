@@ -65,20 +65,22 @@ class Deadline extends Task {
     }
 }
 class Event extends Task {
-    protected String from;
-    protected String to;
+    protected LocalDateTime from;
+    protected LocalDateTime to;
 
     public Event(String description, String from, String to) {
         super(description);
-        this.from = from;
-        this.to = to;
+        this.from = LocalDateTime.parse(from, DateTimeFormatter.ofPattern("d/M/yyyy HHmm"));
+        this.to = LocalDateTime.parse(to, DateTimeFormatter.ofPattern("d/M/yyyy HHmm"));
     }
 
     @Override
     public String toString() {
-        return "[E]" + super.toString() + " (from: " + from + " to: " + to + ")";
+        return "[E]" + super.toString() + " (from: " + from.format(DateTimeFormatter.ofPattern("MMM d yyyy, h:mm a"))
+                + " to: " + to.format(DateTimeFormatter.ofPattern("MMM d yyyy, h:mm a")) + ")";
     }
 }
+
 class DukeException extends Exception {
     public DukeException(String message) {
         super(message);
@@ -283,8 +285,10 @@ public class Friday {
         } else if (task instanceof Event) {
             // Assuming Event class also uses LocalDateTime
             type = "E";
-            timeInfo = " | " + ((Event) task).from.formatted(DateTimeFormatter.ofPattern("d/M/yyyy HHmm")) 
-            + " | " + ((Event) task).to.formatted(DateTimeFormatter.ofPattern("d/M/yyyy HHmm"));
+            timeInfo = " | " + ((Event) task).from.format(DateTimeFormatter.ofPattern("d/M/yyyy HHmm"))
+                    + " | " + ((Event) task).to.format(DateTimeFormatter.ofPattern("d/M/yyyy HHmm"));
+
+
         }
     
         return type + " | " + (task.isDone ? "1" : "0") + " | " + task.description + timeInfo;
