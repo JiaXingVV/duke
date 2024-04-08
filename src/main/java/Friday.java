@@ -156,10 +156,15 @@ public class Friday {
                             if (taskDescription.isEmpty()) {
                                 throw new DukeException("Please enter ToDo task.");
                             }
-                            tasks.add(new Todo(taskDescription));
-                            System.out.println("Got it. I've added this task:");
-                            System.out.println("  " + tasks.get(tasks.size() - 1));
-                            System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                            Todo newTodo = new Todo(taskDescription);
+                            if (!isDuplicate(newTodo)) {
+                                tasks.add(newTodo);
+                                System.out.println("Got it. I've added this task:");
+                                System.out.println("  " + newTodo);
+                                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                            } else {
+                                System.out.println("This task is already in your list.");
+                            }
                             System.out.println("\n");
                             break;
                         case "deadline":
@@ -170,12 +175,18 @@ public class Friday {
                             }
                             String deadlineDescription = deadlineParts[0].trim();
                             String by = deadlineParts[1].trim();
-                            tasks.add(new Deadline(deadlineDescription, by));
-                            System.out.println("Got it. I've added this task:");
-                            System.out.println("  " + tasks.get(tasks.size() - 1));
-                            System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                            Deadline newDeadline = new Deadline(deadlineDescription, by);
+                            if (!isDuplicate(newDeadline)) {
+                                tasks.add(newDeadline);
+                                System.out.println("Got it. I've added this task:");
+                                System.out.println("  " + newDeadline);
+                                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                            } else {
+                                System.out.println("This deadline is already in your list.");
+                            }
                             System.out.println("\n");
                             break;
+
                         case "event":
                             String[] eventParts = taskDescription.split("/from", 2);
                             if (eventParts.length < 2) {
@@ -190,12 +201,18 @@ public class Friday {
                             }
                             String from = eventTimeParts[0].trim();
                             String to = eventTimeParts[1].trim();
-                            tasks.add(new Event(eventDescription, from, to));
-                            System.out.println("Got it. I've added this task:");
-                            System.out.println("  " + tasks.get(tasks.size() - 1));
-                            System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                            Event newEvent = new Event(eventDescription, from, to);
+                            if (!isDuplicate(newEvent)) {
+                                tasks.add(newEvent);
+                                System.out.println("Got it. I've added this event:");
+                                System.out.println("  " + newEvent);
+                                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                            } else {
+                                System.out.println("This event is already in your list.");
+                            }
                             System.out.println("\n");
                             break;
+
                         case "delete":
                             int deleteIndex = Integer.parseInt(taskDescription) - 1;
                             if (deleteIndex >= 0 && deleteIndex < tasks.size()) {
@@ -293,4 +310,13 @@ public class Friday {
     
         return type + " | " + (task.isDone ? "1" : "0") + " | " + task.description + timeInfo;
     }
+    private static boolean isDuplicate(Task newTask) {
+        for (Task task : tasks) {
+            if (task.toString().equals(newTask.toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
+
